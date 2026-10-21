@@ -1,0 +1,2150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroTiempos - Gestión Agrícola, Suelos e Inteligencia de Cultivos</title>
+    <!-- MathJax CDN para renderizar formato LaTeX -->
+<script>
+    window.MathJax = {
+        tex: {
+            inlineMath: [['$', '$'], ['\\(', '\\)']],
+            displayMath: [['$$', '$$'], ['\\[', '\\]']]
+        }
+    };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        agro: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                            950: '#052e16',
+                        },
+                        earth: {
+                            50: '#fdf8f6',
+                            100: '#f2e8e1',
+                            200: '#e4d0c1',
+                            500: '#84533b',
+                            700: '#5c3725',
+                            900: '#381f13',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .gradient-card {
+            background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+        }
+        .gradient-earth {
+            background: linear-gradient(135deg, #5c3725 0%, #381f13 100%);
+        }
+        .badge-stage {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        /* AI formatted text typography */
+        .ai-response p { margin-bottom: 0.5rem; }
+        .ai-response ul { list-style-type: disc; margin-left: 1.25rem; margin-bottom: 0.5rem; }
+        .ai-response ol { list-style-type: decimal; margin-left: 1.25rem; margin-bottom: 0.5rem; }
+        .ai-response li { margin-bottom: 0.25rem; }
+        .ai-response strong { font-weight: 700; color: #14532d; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans antialiased selection:bg-agro-500 selection:text-white">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-agro-900 text-white shadow-lg sticky top-0 z-40 border-b border-agro-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Brand Logo -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('my-field')">
+                    <div class="bg-agro-500 text-white p-2.5 rounded-xl shadow-md flex items-center justify-center">
+                        <i class="fa-solid fa-seedling text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="text-xl font-extrabold tracking-tight text-white flex items-center gap-1.5">
+                            Agro<span class="text-agro-400">Tiempos</span>
+                        </span>
+                        <p class="text-[11px] text-agro-200 hidden sm:block">Gestión Agrícola, Clima, Nutrientes e IA Pro</p>
+                    </div>
+                </div>
+
+                <!-- Desktop Navigation Links -->
+                <nav class="hidden md:flex space-x-1 lg:space-x-2">
+                    <button id="nav-my-field" onclick="switchTab('my-field')" class="px-3 py-2 rounded-lg text-sm font-semibold text-white bg-agro-800 hover:bg-agro-700 transition flex items-center gap-2">
+                        <i class="fa-solid fa-wheat-awn text-agro-300"></i> Mi Campo
+                    </button>
+                    <button id="nav-soil" onclick="switchTab('soil')" class="px-3 py-2 rounded-lg text-sm font-semibold text-agro-100 hover:text-white hover:bg-agro-800 transition flex items-center gap-2">
+                        <i class="fa-solid fa-flask text-amber-300"></i> Mi Suelo
+                    </button>
+                    <button id="nav-catalog" onclick="switchTab('catalog')" class="px-3 py-2 rounded-lg text-sm font-semibold text-agro-100 hover:text-white hover:bg-agro-800 transition flex items-center gap-2">
+                        <i class="fa-solid fa-book-open text-agro-300"></i> Catálogo
+                    </button>
+                    <button id="nav-tasks" onclick="switchTab('tasks')" class="px-3 py-2 rounded-lg text-sm font-semibold text-agro-100 hover:text-white hover:bg-agro-800 transition flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-agro-300"></i> Diario & Labores
+                    </button>
+                    <button id="nav-calculator" onclick="switchTab('calculator')" class="px-3 py-2 rounded-lg text-sm font-semibold text-agro-100 hover:text-white hover:bg-agro-800 transition flex items-center gap-2">
+                        <i class="fa-solid fa-calculator text-agro-300"></i> Simular Tiempos
+                    </button>
+                    <button id="nav-ai-assistant" onclick="switchTab('ai-assistant')" class="px-3 py-2 rounded-lg text-sm font-semibold text-agro-100 hover:text-white hover:bg-agro-800 transition flex items-center gap-2">
+                        <i class="fa-solid fa-robot text-agro-300"></i> Agrónomo IA
+                    </button>
+                </nav>
+
+                <!-- Quick Action Buttons -->
+                <div class="flex items-center space-x-2">
+                    <button onclick="openAddCropModal()" class="bg-agro-500 hover:bg-agro-400 text-agro-950 px-3.5 py-2 rounded-xl text-sm font-bold shadow-md transition flex items-center gap-1.5 transform active:scale-95">
+                        <i class="fa-solid fa-circle-plus text-base"></i>
+                        <span class="hidden sm:inline">Nuevo Cultivo</span>
+                    </button>
+                    <button onclick="exportData()" title="Respaldar Datos en JSON" class="bg-agro-800 hover:bg-agro-700 text-agro-200 p-2.5 rounded-xl text-sm border border-agro-700 transition hidden lg:block">
+                        <i class="fa-solid fa-download"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Bar -->
+        <div class="md:hidden bg-agro-950 border-t border-agro-800 px-2 py-2 flex justify-around text-xs font-medium overflow-x-auto">
+            <button onclick="switchTab('my-field')" class="mobile-nav-btn text-agro-300 flex flex-col items-center py-1 px-2 rounded" id="mob-my-field">
+                <i class="fa-solid fa-wheat-awn text-lg mb-0.5"></i> Mi Campo
+            </button>
+            <button onclick="switchTab('soil')" class="mobile-nav-btn text-agro-200 flex flex-col items-center py-1 px-2 rounded" id="mob-soil">
+                <i class="fa-solid fa-flask text-lg mb-0.5"></i> Mi Suelo
+            </button>
+            <button onclick="switchTab('catalog')" class="mobile-nav-btn text-agro-200 flex flex-col items-center py-1 px-2 rounded" id="mob-catalog">
+                <i class="fa-solid fa-book-open text-lg mb-0.5"></i> Catálogo
+            </button>
+            <button onclick="switchTab('tasks')" class="mobile-nav-btn text-agro-200 flex flex-col items-center py-1 px-2 rounded" id="mob-tasks">
+                <i class="fa-solid fa-list-check text-lg mb-0.5"></i> Labores
+            </button>
+            <button onclick="switchTab('calculator')" class="mobile-nav-btn text-agro-200 flex flex-col items-center py-1 px-2 rounded" id="mob-calculator">
+                <i class="fa-solid fa-calculator text-lg mb-0.5"></i> Simular
+            </button>
+            <button onclick="switchTab('ai-assistant')" class="mobile-nav-btn text-agro-200 flex flex-col items-center py-1 px-2 rounded" id="mob-ai-assistant">
+                <i class="fa-solid fa-robot text-lg mb-0.5"></i> AgroAI
+            </button>
+        </div>
+    </header>
+
+    <!-- Global Weather & Soil Alert Header Bar -->
+    <div id="weather-banner" class="bg-agro-800 text-white py-2.5 px-4 shadow-inner border-b border-agro-700">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between text-xs sm:text-sm gap-2">
+            <div class="flex items-center space-x-4 overflow-x-auto py-0.5">
+                <div class="flex items-center space-x-2 whitespace-nowrap">
+                    <span class="bg-agro-900 text-agro-300 p-1.5 rounded-lg"><i class="fa-solid fa-leaf"></i></span>
+                    <span>Cultivos Activos: <strong id="stat-active-count" class="text-agro-200 font-bold text-base">0</strong></span>
+                </div>
+                <div class="flex items-center space-x-2 whitespace-nowrap">
+                    <span class="bg-agro-900 text-blue-300 p-1.5 rounded-lg"><i class="fa-solid fa-droplet"></i></span>
+                    <span>Riegos para hoy: <strong id="stat-water-today" class="text-blue-200 font-bold text-base">0</strong></span>
+                </div>
+                <div class="flex items-center space-x-2 whitespace-nowrap">
+                    <span class="bg-agro-900 text-amber-300 p-1.5 rounded-lg"><i class="fa-solid fa-cloud-showers-heavy"></i></span>
+                    <span>Pronóstico Lluvia: <strong id="stat-rain-mm" class="text-blue-300 font-bold text-base">18 mm</strong></span>
+                </div>
+                <div class="flex items-center space-x-2 whitespace-nowrap hidden xl:flex">
+                    <span class="bg-agro-900 text-emerald-300 p-1.5 rounded-lg"><i class="fa-solid fa-temperature-three-quarters"></i></span>
+                    <span>Temp. Promedio: <strong class="text-emerald-200 font-bold text-base">21°C</strong></span>
+                </div>
+            </div>
+
+            <!-- Smart Weather Alert Pills -->
+            <div class="flex items-center gap-2">
+                <div id="rain-alert-pill" class="bg-sky-900/90 text-sky-200 border border-sky-600 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-2 animate-pulse">
+                    <i class="fa-solid fa-cloud-rain text-sky-300 text-sm"></i>
+                    <span><strong>Aviso Climático:</strong> Se esperan 18 mm de lluvia. Riegos automáticos suspendidos.</span>
+                </div>
+                <button onclick="toggleRainSimulation()" title="Alternar entre Lluvia / Sol" class="bg-agro-900 hover:bg-agro-700 text-agro-200 px-2.5 py-1 rounded-lg text-xs border border-agro-700 flex items-center gap-1">
+                    <i class="fa-solid fa-cloud-sun"></i> <span class="hidden sm:inline">Simular Clima</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dynamic Content Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- TAB 1: MY FIELD / HUERTA (ACTIVE CROPS) -->
+        <section id="tab-my-field" class="tab-content block space-y-6">
+            <!-- Hero Banner -->
+            <div class="gradient-card rounded-2xl p-6 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden">
+                <div class="z-10 max-w-2xl">
+                    <span class="inline-block px-3 py-1 bg-white/20 backdrop-blur-md text-agro-100 text-xs font-bold rounded-full mb-2">
+                        <i class="fa-solid fa-tractor mr-1"></i> Panel de Control del Agricultor
+                    </span>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Monitoreo de Cultivos y Programación Dinámica de Riego</h1>
+                    <p class="mt-1 text-agro-100 text-sm leading-relaxed">
+                        AgroTiempos calcula la etapa fenológica exacta de tus plantas, adaptando los días de riego a las lluvias registradas (18 mm), el tipo de suelo y la exposición solar.
+                    </p>
+                </div>
+                <div class="z-10 flex flex-wrap gap-2">
+                    <button onclick="openAddCropModal()" class="bg-white text-agro-900 hover:bg-agro-50 font-bold px-4 py-2.5 rounded-xl shadow text-sm transition flex items-center gap-2">
+                        <i class="fa-solid fa-plus text-agro-600"></i> Registrar Parcela con GPS
+                    </button>
+                    <button onclick="switchTab('soil')" class="bg-earth-700/80 hover:bg-earth-700 text-white font-semibold px-4 py-2.5 rounded-xl border border-white/20 text-sm transition flex items-center gap-2">
+                        <i class="fa-solid fa-vial"></i> Ver Análisis de Suelo
+                    </button>
+                </div>
+                <div class="absolute -right-10 -bottom-10 opacity-10 text-white text-9xl pointer-events-none">
+                    <i class="fa-solid fa-seedling"></i>
+                </div>
+            </div>
+
+            <!-- Rain Impact Status Banner -->
+            <div id="rain-status-box" class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-xl flex-shrink-0">
+                        <i class="fa-solid fa-cloud-showers-heavy"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-900 text-sm">Alerta de Precipitación: 18 mm previstos en la zona</h4>
+                        <p class="text-xs text-slate-600">El modelo fenológico de AgroTiempos ha aplazado el riego programado para evitar asfixia radicular y lixiviación de nutrientes.</p>
+                    </div>
+                </div>
+                <div class="flex-shrink-0">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-blue-200 text-blue-900">
+                        <i class="fa-solid fa-shield-halved mr-1"></i> Riego Auto-Suspendido
+                    </span>
+                </div>
+            </div>
+
+            <!-- Filters and Search for My Crops -->
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-3 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                <div class="relative w-full sm:w-80">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="my-crops-search" oninput="renderMyCrops()" placeholder="Buscar en mis parcelas..." class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-agro-500">
+                </div>
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                    <label for="my-crops-filter-stage" class="text-xs font-semibold text-slate-500 whitespace-nowrap">Etapa:</label>
+                    <select id="my-crops-filter-stage" onchange="renderMyCrops()" class="border border-slate-300 text-xs sm:text-sm rounded-lg p-2 focus:ring-agro-500 focus:border-agro-500 bg-white">
+                        <option value="ALL">Todas las etapas</option>
+                        <option value="Germinación / Brotación">Germinación / Brotación</option>
+                        <option value="Crecimiento Vegetativo">Crecimiento Vegetativo</option>
+                        <option value="Floración / Cuajado">Floración / Cuajado</option>
+                        <option value="Fructificación / Engorde">Fructificación / Engorde</option>
+                        <option value="Listo para Cosecha">Listo para Cosecha</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- My Crops Active Grid -->
+            <div id="my-crops-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Rendered dynamically -->
+            </div>
+
+            <!-- Empty State Placeholder -->
+            <div id="my-crops-empty" class="hidden bg-white border-2 border-dashed border-slate-300 rounded-2xl p-12 text-center max-w-lg mx-auto">
+                <div class="w-16 h-16 bg-agro-100 text-agro-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                    <i class="fa-solid fa-wheat-awn"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-800">No tienes cultivos registrados aún</h3>
+                <p class="text-sm text-slate-500 mt-1 mb-6">Comienza registrando tu parcela indicando tipo de suelo, exposición solar y ubicación GPS.</p>
+                <button onclick="openAddCropModal()" class="bg-agro-600 hover:bg-agro-700 text-white font-bold px-5 py-2.5 rounded-xl shadow-md text-sm transition">
+                    <i class="fa-solid fa-plus mr-1"></i> Agregar Mi Primer Cultivo
+                </button>
+            </div>
+        </section>
+
+        <!-- TAB 2: MI SUELO (SOIL LOG & VISUAL ANALYTICS) -->
+        <section id="tab-soil" class="tab-content hidden space-y-6">
+            <div class="gradient-earth p-6 rounded-2xl shadow-xl text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <span class="inline-block px-3 py-1 bg-white/20 backdrop-blur-md text-earth-100 text-xs font-bold rounded-full mb-2">
+                        <i class="fa-solid fa-flask mr-1"></i> Laboratorio Químico & Nutrientes
+                    </span>
+                    <h2 class="text-2xl font-black">Análisis Nutricional y Balance del Suelo</h2>
+                    <p class="text-xs text-earth-100 mt-1 max-w-2xl">
+                        Supervisa el estado nutricional N-P-K, pH y porcentaje de materia orgánica. AgroTiempos genera gráficos analíticos para recomendar correctores y enmiendas exactas.
+                    </p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="openSoilModal()" class="bg-white text-earth-900 hover:bg-earth-100 font-bold px-4 py-2.5 rounded-xl text-sm shadow transition flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square text-earth-700"></i> Editar Examen
+                    </button>
+                </div>
+            </div>
+
+            <!-- Key Soil Metrics Cards Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                    <span class="text-xs text-slate-500 font-bold block mb-1">pH del Suelo</span>
+                    <div id="soil-display-ph" class="text-2xl font-black text-amber-600">5.4</div>
+                    <span id="soil-tag-ph" class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full mt-1 inline-block">Ácido (Moderado)</span>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                    <span class="text-xs text-slate-500 font-bold block mb-1">Nitrógeno (N)</span>
+                    <div id="soil-display-n" class="text-2xl font-black text-emerald-600">22 ppm</div>
+                    <span id="soil-tag-n" class="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full mt-1 inline-block">Adecuado</span>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                    <span class="text-xs text-slate-500 font-bold block mb-1">Fósforo (P)</span>
+                    <div id="soil-display-p" class="text-2xl font-black text-blue-600">14 ppm</div>
+                    <span id="soil-tag-p" class="text-[10px] bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-full mt-1 inline-block">Ligeramente Bajo</span>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                    <span class="text-xs text-slate-500 font-bold block mb-1">Potasio (K)</span>
+                    <div id="soil-display-k" class="text-2xl font-black text-purple-600">180 ppm</div>
+                    <span id="soil-tag-k" class="text-[10px] bg-purple-100 text-purple-800 font-semibold px-2 py-0.5 rounded-full mt-1 inline-block">Óptimo</span>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                    <span class="text-xs text-slate-500 font-bold block mb-1">Materia Orgánica</span>
+                    <div id="soil-display-om" class="text-2xl font-black text-earth-700">3.2%</div>
+                    <span id="soil-tag-om" class="text-[10px] bg-earth-100 text-earth-900 font-semibold px-2 py-0.5 rounded-full mt-1 inline-block">Buen Contenido</span>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                    <span class="text-xs text-slate-500 font-bold block mb-1">Humedad Suelo</span>
+                    <div id="soil-display-moisture" class="text-2xl font-black text-sky-600">68%</div>
+                    <span id="soil-tag-moisture" class="text-[10px] bg-sky-100 text-sky-800 font-semibold px-2 py-0.5 rounded-full mt-1 inline-block">Saturado (Lluvia)</span>
+                </div>
+            </div>
+
+            <!-- Chart.js Soil Visual Analytics -->
+            <div class="w-full">
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <h3 class="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-column text-agro-600"></i> Comparativa Nutricional N-P-K (ppm) vs Óptimo
+                    </h3>
+                    <div class="relative h-72 w-full">
+                        <canvas id="soilNutrientChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intelligent Soil Interpretation Banner -->
+            <div class="bg-amber-50 border border-amber-300 rounded-2xl p-5 shadow-sm space-y-3">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-amber-500 text-white rounded-xl flex items-center justify-center text-lg flex-shrink-0 shadow">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-amber-950 text-base">Diagnóstico Agronómico Personalizado</h4>
+                            <p class="text-xs text-amber-800">Fecha de la última muestra registrada: <span id="soil-last-date" class="font-bold">12 de Agosto, 2026</span></p>
+                        </div>
+                    </div>
+                    <button onclick="askAIAboutSoil()" class="bg-agro-700 hover:bg-agro-800 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow transition flex items-center gap-1.5 whitespace-nowrap">
+                        <i class="fa-solid fa-robot"></i> Asesoría AgroAI
+                    </button>
+                </div>
+
+                <div id="soil-ai-advice-box" class="bg-white/90 p-4 rounded-xl border border-amber-200 text-xs text-slate-800 leading-relaxed space-y-2">
+                    <p class="font-bold text-amber-900 flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-info text-amber-600"></i> Recomendación de Corrección y Calificación del Suelo:
+                    </p>
+                    <p id="soil-advice-text">
+                        "Tu suelo presenta un pH de <strong>5,4</strong> (ácido). Para hortalizas de fruto como el tomate, pimiento o maíz, se sugiere aplicar cal agrícola (100g/m²) para llevar el pH al rango óptimo de 6,2 a 6,8 antes de la floración."
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: CROP CATALOG & EXTENDED FICHAS TÉCNICAS (12 CULTIVOS + PLAGAS) -->
+        <section id="tab-catalog" class="tab-content hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="max-w-3xl">
+                    <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-book-open text-agro-600"></i> Catálogo Agrícola & Guía de Enfermedades
+                    </h2>
+                    <p class="text-slate-600 text-sm mt-1">
+                        Consulta requerimientos hídricos, fases fenológicas y prevención de plagas para más de 12 especies de hortalizas, frutales y tubérculos.
+                    </p>
+                </div>
+
+                <!-- Filters -->
+                <div class="mt-6 flex flex-col md:flex-row gap-3 items-center justify-between">
+                    <div class="relative w-full md:w-96">
+                        <i class="fa-solid fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="catalog-search" oninput="renderCatalog()" placeholder="Buscar cultivo (ej: Tomate, Palta, Frutilla, Zanahoria)..." class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-agro-500">
+                    </div>
+                    <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                        <button onclick="filterCatalogCategory('ALL')" class="cat-filter-btn active text-xs font-semibold px-3 py-1.5 rounded-lg border border-agro-600 bg-agro-600 text-white">Todos</button>
+                        <button onclick="filterCatalogCategory('Hortaliza')" class="cat-filter-btn text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100">Hortalizas</button>
+                        <button onclick="filterCatalogCategory('Frutal')" class="cat-filter-btn text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100">Frutales</button>
+                        <button onclick="filterCatalogCategory('Cereal/Tubérculo')" class="cat-filter-btn text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100">Tubérculos/Cereales</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Catalog Cards Grid -->
+            <div id="catalog-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamically rendered -->
+            </div>
+        </section>
+
+        <!-- TAB 4: DIARIO DE LABORES Y TAREAS AGRÍCOLAS -->
+        <section id="tab-tasks" class="tab-content hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-agro-600"></i> Diario de Labores y Tareas del Campo
+                        </h2>
+                        <p class="text-slate-600 text-sm mt-1">
+                            Programa y registra las actividades clave: podas, desmalezado, fertilización orgánica y tratamientos fitosanitarios.
+                        </p>
+                    </div>
+                    <button onclick="openAddTaskModal()" class="bg-agro-600 hover:bg-agro-700 text-white font-bold px-4 py-2.5 rounded-xl text-sm shadow transition flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Nueva Labor
+                    </button>
+                </div>
+
+                <!-- Task List Container -->
+                <div class="mt-6 space-y-3" id="tasks-container">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: SIMULATOR & ET0 HYDRO CALCULATOR -->
+        <!-- TAB 5: SIMULATOR & ET0 HYDRO CALCULATOR -->
+        <section id="tab-calculator" class="tab-content hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="max-w-3xl">
+                    <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-calculator text-agro-600"></i> Calculadora de Evapotranspiración ($ET_0$) y Riego
+                    </h2>
+                    <p class="text-slate-600 text-sm mt-1">
+                        Estima la $ET_0$ mediante la fórmula de <strong>Hargreaves-Samani</strong>, la Demanda Hídrica del Cultivo ($ET_c$) y la Lámina/Volumen Bruto necesario considerando la eficiencia de tu sistema de riego.
+                    </p>
+                </div>
+
+                <!-- Inputs de la Calculadora -->
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Especie / Cultivo:</label>
+                        <select id="calc-crop-select" onchange="updateKcValue()" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-agro-500 bg-white">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Coeficiente Cultivo ($K_c$):</label>
+                        <input type="number" step="0.01" id="calc-kc-input" value="1.15" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-agro-500 bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Fecha de Siembra:</label>
+                        <input type="date" id="calc-date-input" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-agro-500 bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Superficie Terreno ($m^2$):</label>
+                        <input type="number" id="calc-area-input" value="100" min="1" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-agro-500 bg-white">
+                    </div>
+
+                    <!-- Parámetros Climatológicos (Hargreaves-Samani) -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Temp. Máxima ($T_{máx}$ °C):</label>
+                        <input type="number" step="0.1" id="calc-tmax" value="28" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-agro-500 bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Temp. Mínima ($T_{mín}$ °C):</label>
+                        <input type="number" step="0.1" id="calc-tmin" value="12" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-agro-500 bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Rad. Extraterrestre ($R_a$ mm/día):</label>
+                        <input type="number" step="0.1" id="calc-ra" value="14.5" placeholder="Ej: 12.0 - 16.0" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-agro-500 bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Eficiencia de Riego ($E_f$ %):</label>
+                        <select id="calc-eficiencia" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-agro-500 bg-white">
+                            <option value="0.90">Goteo (90%)</option>
+                            <option value="0.75">Aspersión (75%)</option>
+                            <option value="0.50">Gravedad / Surco (50%)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-4 flex justify-end">
+                    <button onclick="calculateCropTimeline()" class="bg-agro-600 hover:bg-agro-700 text-white font-bold px-6 py-2.5 rounded-xl shadow-md text-sm transition flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Calcular $ET_0$, Demanda y Riego
+                    </button>
+                </div>
+            </div>
+
+            <!-- Simulation & Hydric Results Output -->
+            <div id="calc-results-container" class="hidden space-y-6">
+                <!-- Métricas Clave de Agua -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                        <span class="text-xs text-slate-500 font-bold block mb-1">Evapotranspiración Base ($ET_0$)</span>
+                        <div id="res-et0" class="text-2xl font-black text-blue-600">0.0 mm/día</div>
+                        <span class="text-[10px] text-slate-400">Hargreaves-Samani</span>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                        <span class="text-xs text-slate-500 font-bold block mb-1">Demanda Cultivo ($ET_c$)</span>
+                        <div id="res-etc" class="text-2xl font-black text-emerald-600">0.0 mm/día</div>
+                        <span class="text-[10px] text-slate-400">$ET_0 \times K_c$</span>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                        <span class="text-xs text-slate-500 font-bold block mb-1">Lámina Bruta de Riego</span>
+                        <div id="res-lamina" class="text-2xl font-black text-amber-600">0.0 mm/día</div>
+                        <span class="text-[10px] text-slate-400">$ET_c / E_f$</span>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                        <span class="text-xs text-slate-500 font-bold block mb-1">Volumen Bruto Diario</span>
+                        <div id="res-volumen" class="text-2xl font-black text-indigo-600">0 L/día</div>
+                        <span id="res-volumen-sub" class="text-[10px] text-slate-400">Para la superficie ingresada</span>
+                    </div>
+                </div>
+
+                <div class="bg-agro-900 text-white p-6 rounded-2xl shadow-lg border border-agro-800">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                        <div class="md:col-span-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-agro-300">Resumen de la Simulación</span>
+                            <h3 id="calc-res-title" class="text-2xl font-black text-white mt-0.5">Tomate Riego Estándar</h3>
+                            <p id="calc-res-subtitle" class="text-agro-200 text-sm mt-1">Ciclo total estimado</p>
+                        </div>
+                        <div class="bg-agro-800/90 p-4 rounded-xl border border-agro-700 text-center space-y-1">
+                            <span class="text-xs text-agro-300 block">Fecha Estimada de Cosecha</span>
+                            <span id="calc-res-harvest-date" class="text-xl font-extrabold text-amber-300">-</span>
+                            <span id="calc-res-water-needed" class="text-xs text-blue-200 block font-semibold mt-1">~0 Litros totales proyectados</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline Visual Cards -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h4 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-timeline text-agro-600"></i> Etapas Fenológicas y Calendario de Desarrollo
+                    </h4>
+                    <div id="calc-timeline-steps" class="space-y-4 relative before:absolute before:inset-0 before:left-5 before:w-0.5 before:bg-slate-200">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 6: AGRO AI ASSISTANT -->
+        <section id="tab-ai-assistant" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[650px]">
+                <!-- Header Chat -->
+                <div class="bg-agro-900 text-white p-4 sm:p-5 flex items-center justify-between border-b border-agro-800">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-agro-500 text-agro-950 rounded-full flex items-center justify-center font-bold text-lg shadow-inner">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-base flex items-center gap-2">
+                                AgroAI - Asistente Agrónomo
+                                <span class="bg-agro-700 text-agro-200 text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase">Gemini 3 Flash</span>
+                            </h3>
+                            <p class="text-xs text-agro-200">Consultas de suelo, plagas, enmiendas y planes de fertilización</p>
+                        </div>
+                    </div>
+                    <button onclick="clearAIChat()" class="text-xs text-agro-300 hover:text-white bg-agro-800 hover:bg-agro-700 px-3 py-1.5 rounded-lg border border-agro-700 transition">
+                        <i class="fa-solid fa-rotate-right mr-1"></i> Limpiar Chat
+                    </button>
+                </div>
+
+                <!-- Quick Prompt Presets -->
+                <div class="bg-slate-50 border-b border-slate-200 p-3 overflow-x-auto flex gap-2 custom-scrollbar whitespace-nowrap text-xs">
+                    <span class="text-slate-500 font-bold self-center mr-1">Sugerencias:</span>
+                    <button onclick="sendPresetQuery('Tengo un suelo con pH 5.4. ¿Cómo corrijo la acidez para cultivar tomates?')" class="bg-white border border-slate-300 hover:border-agro-500 hover:text-agro-700 px-3 py-1.5 rounded-full text-slate-700 shadow-sm transition">
+                        🧪 Corregir pH 5.4
+                    </button>
+                    <button onclick="sendPresetQuery('Llovió 18 mm hoy. ¿Cuántos días debo suspender el riego por goteo en suelo franco?')" class="bg-white border border-slate-300 hover:border-agro-500 hover:text-agro-700 px-3 py-1.5 rounded-full text-slate-700 shadow-sm transition">
+                        🌧️ Lluvia 18 mm y riego
+                    </button>
+                    <button onclick="sendPresetQuery('¿Cómo combato la pulguilla y arañita roja de manera orgánica en frutillas?')" class="bg-white border border-slate-300 hover:border-agro-500 hover:text-agro-700 px-3 py-1.5 rounded-full text-slate-700 shadow-sm transition">
+                        🐞 Control orgánico plagas
+                    </button>
+                    <button onclick="sendPresetQuery('¿Qué biofertilizante casero rico en Potasio puedo preparar para la floración?')" class="bg-white border border-slate-300 hover:border-agro-500 hover:text-agro-700 px-3 py-1.5 rounded-full text-slate-700 shadow-sm transition">
+                        🍌 Potasio casero
+                    </button>
+                </div>
+
+                <!-- Chat History Messages Container -->
+                <div id="ai-chat-messages" class="flex-grow p-4 sm:p-6 overflow-y-auto space-y-4 bg-slate-50/50 custom-scrollbar">
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 rounded-full bg-agro-700 text-white flex items-center justify-center text-xs flex-shrink-0">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+                        <div class="bg-white border border-slate-200 p-4 rounded-2xl rounded-tl-none shadow-sm max-w-xl text-sm text-slate-800 leading-relaxed space-y-2 ai-response">
+                            <p class="font-bold text-agro-800">¡Hola! Soy AgroAI, tu agrónomo digital personal.</p>
+                            <p>Estoy sincronizado con los datos de tu terreno (<strong>pH 5.4</strong>, NPK) y el pronóstico del tiempo (<strong>18 mm de lluvia hoy</strong>). ¿En qué cultivo o inquietud puedo ayudarte?</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Input Form -->
+                <div class="p-4 bg-white border-t border-slate-200">
+                    <form id="ai-chat-form" onsubmit="handleAISubmit(event)" class="flex items-center gap-2">
+                        <input type="text" id="ai-input" placeholder="Escribe tu consulta agrícola o de plagas..." class="flex-grow border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-agro-500">
+                        <button type="submit" id="ai-send-btn" class="bg-agro-600 hover:bg-agro-700 text-white font-bold px-5 py-3 rounded-xl shadow-md text-sm transition flex items-center gap-2">
+                            <span>Enviar</span>
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL 1: ADD / REGISTER NEW CROP -->
+    <div id="modal-add-crop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar border border-slate-100 transform transition-all">
+            <div class="bg-agro-900 text-white px-6 py-4 flex items-center justify-between">
+                <h3 class="text-lg font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-seedling text-agro-400"></i> Registrar Parcela y Ubicación GPS
+                </h3>
+                <button onclick="closeAddCropModal()" class="text-agro-200 hover:text-white text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="form-add-crop" onsubmit="saveNewCrop(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Nombre o Apodo de la Parcela / Maceta:</label>
+                    <input type="text" id="add-crop-name" required placeholder="Ej: Tomates Huerta Norte, Limonero Patio Travesía" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-agro-500">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Especie o Cultivo Base:</label>
+                        <select id="add-crop-type" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-agro-500 bg-white">
+                            <!-- Populated via JS -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Fecha de Siembra / Trasplante:</label>
+                        <input type="date" id="add-crop-date" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-agro-500">
+                    </div>
+                </div>
+
+                <!-- TERRAIN & GPS SECTION -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                    <h4 class="text-xs font-extrabold text-agro-900 uppercase tracking-wider flex items-center justify-between">
+                        <span><i class="fa-solid fa-location-dot text-red-500 mr-1"></i> Ubicación y Parámetros del Terreno</span>
+                        <button type="button" onclick="detectGPSLocation()" class="text-[11px] bg-agro-600 hover:bg-agro-700 text-white font-bold px-2.5 py-1 rounded-lg transition flex items-center gap-1">
+                            <i class="fa-solid fa-crosshairs"></i> Detectar GPS
+                        </button>
+                    </h4>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1">Ubicación / Coordenadas:</label>
+                            <input type="text" id="add-crop-location" placeholder="Ej: -33.0245, -71.5518 (Viña del Mar)" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs focus:ring-2 focus:ring-agro-500 bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1">Tipo de Suelo:</label>
+                            <select id="add-crop-soil" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs focus:ring-2 focus:ring-agro-500 bg-white">
+                                <option value="Franco">Franco (Equilibrado)</option>
+                                <option value="Arcilloso">Arcilloso (Retiene mucha agua)</option>
+                                <option value="Arenoso">Arenoso (Drena rápido)</option>
+                                <option value="Franco-Arcilloso">Franco-Arcilloso</option>
+                                <option value="Limoso">Limoso</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1">Exposición Solar:</label>
+                            <select id="add-crop-sun" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs focus:ring-2 focus:ring-agro-500 bg-white">
+                                <option value="Sol Pleno (>6h)">Sol Pleno (>6 hrs)</option>
+                                <option value="Sombra Parcial (3-6h)">Sombra Parcial (3-6 hrs)</option>
+                                <option value="Sombra (<3h)">Sombra (<3 hrs)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1">Sistema de Riego:</label>
+                            <select id="add-crop-irrigation" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs focus:ring-2 focus:ring-agro-500 bg-white">
+                                <option value="Goteo Directo">Goteo Directo</option>
+                                <option value="Aspersión">Aspersión / Lluvia</option>
+                                <option value="Manual (Regadera)">Manual con Regadera</option>
+                                <option value="Gravedad / Surco">Gravedad / Surco</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1">Entorno:</label>
+                            <select id="add-crop-env" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs focus:ring-2 focus:ring-agro-500 bg-white">
+                                <option value="Aire Libre">Aire Libre</option>
+                                <option value="Invernadero / Túnel">Invernadero Protegido</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Superficie / Cantidad:</label>
+                        <input type="text" id="add-crop-size" placeholder="Ej: 20 m², 15 macetas, 0.5 Hectárea" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs focus:ring-2 focus:ring-agro-500 bg-white">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Notas Especiales o Abono Inicial:</label>
+                    <textarea id="add-crop-notes" rows="2" placeholder="Ej: Abonado con humus de lombriz y compost maduro..." class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-agro-500"></textarea>
+                </div>
+
+                <div class="pt-3 flex justify-end space-x-2">
+                    <button type="button" onclick="closeAddCropModal()" class="px-4 py-2 border border-slate-300 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-agro-600 hover:bg-agro-700 text-white rounded-xl text-sm font-bold shadow transition">Guardar Cultivo y Terreno</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: EDIT SOIL ANALYSIS -->
+    <div id="modal-soil" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-100">
+            <div class="bg-earth-900 text-white px-6 py-4 flex items-center justify-between">
+                <h3 class="text-lg font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-flask text-amber-400"></i> Actualizar Análisis de Suelo
+                </h3>
+                <button onclick="closeSoilModal()" class="text-earth-200 hover:text-white text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="form-soil" onsubmit="saveSoilData(event)" class="p-6 space-y-4 text-xs">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">pH del Suelo (0.0 - 14.0):</label>
+                        <input type="number" step="0.1" id="soil-input-ph" required value="5.4" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-earth-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Fecha del Análisis:</label>
+                        <input type="date" id="soil-input-date" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-earth-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Nitrógeno (N) ppm:</label>
+                        <input type="number" id="soil-input-n" value="22" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-earth-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Fósforo (P) ppm:</label>
+                        <input type="number" id="soil-input-p" value="14" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-earth-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Potasio (K) ppm:</label>
+                        <input type="number" id="soil-input-k" value="180" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-earth-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Materia Orgánica (%):</label>
+                        <input type="number" step="0.1" id="soil-input-om" value="3.2" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-earth-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Humedad Actual (%):</label>
+                        <input type="number" id="soil-input-moisture" value="68" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-earth-500">
+                    </div>
+                </div>
+
+                <div class="pt-3 flex justify-end space-x-2">
+                    <button type="button" onclick="closeSoilModal()" class="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-700 hover:bg-slate-100">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-earth-700 hover:bg-earth-900 text-white rounded-xl font-bold shadow transition">Guardar Mediciones</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: CROP DETAIL & PEST/DISEASE VIEW -->
+    <div id="modal-crop-detail" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar border border-slate-100">
+            <div id="crop-detail-content">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: ADD TASK / LABOR LOG -->
+    <div id="modal-add-task" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-100">
+            <div class="bg-agro-900 text-white px-6 py-4 flex items-center justify-between">
+                <h3 class="text-lg font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-agro-400"></i> Nueva Labor Agrícola
+                </h3>
+                <button onclick="closeAddTaskModal()" class="text-agro-200 hover:text-white text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="form-add-task" onsubmit="saveNewTask(event)" class="p-6 space-y-4 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Título de la Labor:</label>
+                    <input type="text" id="task-input-title" required placeholder="Ej: Aplicar sulfato de cobre, Poda de chupones" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-agro-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Categoría:</label>
+                        <select id="task-input-cat" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-agro-500 bg-white">
+                            <option value="Fertilización">Fertilización</option>
+                            <option value="Control de Plagas">Control de Plagas</option>
+                            <option value="Poda / Mantenimiento">Poda / Mantenimiento</option>
+                            <option value="Desmalezado">Desmalezado</option>
+                            <option value="Cosecha">Cosecha</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Fecha Programada:</label>
+                        <input type="date" id="task-input-date" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-agro-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Parcela Asociada:</label>
+                    <select id="task-input-crop" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-agro-500 bg-white">
+                        <!-- Populated via JS -->
+                    </select>
+                </div>
+
+                <div class="pt-3 flex justify-end space-x-2">
+                    <button type="button" onclick="closeAddTaskModal()" class="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-700 hover:bg-slate-100">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-agro-600 hover:bg-agro-700 text-white rounded-xl font-bold shadow transition">Guardar Labor</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-8 border-t border-slate-800 text-xs mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-2">
+                <div class="bg-agro-600 text-white p-1.5 rounded-lg text-sm">
+                    <i class="fa-solid fa-seedling"></i>
+                </div>
+                <span class="text-white font-bold text-sm">AgroTiempos</span> - Herramienta integral para el agricultor y horticultor.
+            </div>
+            <p>© 2026 AgroTiempos. Control fenológico, riego inteligente y análisis de suelos.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Extended Agricultural Database (12+ Crops with Diseases & Pests)
+        const CROP_DATABASE = [
+            {
+                id: 'tomate',
+                name: 'Tomate',
+                scientificName: 'Solanum lycopersicum',
+                category: 'Hortaliza',
+                icon: 'fa-apple-whole',
+                color: 'bg-red-500',
+                waterFrequencyDays: 2,
+                waterMethod: 'Riego localizado por goteo directo al pie. Evitar mojar el follaje.',
+                harvestType: 'Escalonada Manual',
+                harvestDescription: 'Cosechar cuando el fruto adquiera un tono rojo uniforme y firme.',
+                totalDays: 120,
+                kc: 1.15,
+                pests: [
+                    { name: 'Mildiu / Tizón Tardío', type: 'Hongo', solution: 'Aplicar purín de cola de caballo o caldo bordelés preventivo.' },
+                    { name: 'Mosquita Blanca / Pulgón', type: 'Plaga', solution: 'Jabón potásico con aceite de neem al 2%.' }
+                ],
+                stages: [
+                    { name: 'Germinación', durationDays: 12, description: 'Brote de plántula en almacigo.' },
+                    { name: 'Crecimiento Vegetativo', durationDays: 30, description: 'Desarrollo de tallo principal y ramas laterales.' },
+                    { name: 'Floración y Cuajado', durationDays: 25, description: 'Aparición de flores amarillas y frutos pequeños.' },
+                    { name: 'Fructificación y Engorde', durationDays: 33, description: 'Crecimiento y maduración de frutos.' },
+                    { name: 'Cosecha Continua', durationDays: 20, description: 'Cosecha regular cada 3 días.' }
+                ],
+                idealTemp: '18°C - 28°C',
+                soilType: 'Suelo franco, pH 6.0 - 6.8 con buen compost.'
+            },
+            {
+                id: 'lechuga',
+                name: 'Lechuga',
+                scientificName: 'Lactuca sativa',
+                category: 'Hortaliza',
+                icon: 'fa-leaf',
+                color: 'bg-emerald-500',
+                waterFrequencyDays: 1,
+                waterMethod: 'Riego ligero y continuo para mantener capa húmeda.',
+                harvestType: 'Corte Entero o Hojas',
+                harvestDescription: 'Cortar antes de la emisión del tallo floral (espigado).',
+                totalDays: 60,
+                kc: 0.95,
+                pests: [
+                    { name: 'Babosas y Caracoles', type: 'Plaga', solution: 'Trampas de cerveza o ceniza en el perímetro.' },
+                    { name: 'Oídio / Cenilla', type: 'Hongo', solution: 'Bicarbonato de potasio diluido en agua.' }
+                ],
+                stages: [
+                    { name: 'Germinación', durationDays: 6, description: 'Nacimiento de cotiledones.' },
+                    { name: 'Roseta Foliar', durationDays: 24, description: 'Desarrollo del follaje exterior.' },
+                    { name: 'Apretado / Cogollo', durationDays: 20, description: 'Formación del cogollo central.' },
+                    { name: 'Cosecha Óptima', durationDays: 10, description: 'Recolección fresca de la planta.' }
+                ],
+                idealTemp: '12°C - 22°C',
+                soilType: 'Suelo suelto con alta retención de humedad.'
+            },
+            {
+                id: 'papa',
+                name: 'Papa / Patata',
+                scientificName: 'Solanum tuberosum',
+                category: 'Cereal/Tubérculo',
+                icon: 'fa-cubes',
+                color: 'bg-amber-700',
+                waterFrequencyDays: 4,
+                waterMethod: 'Riego profundo y moderado. Reducir al secarse la mata.',
+                harvestType: 'Desenterramiento',
+                harvestDescription: 'Cosechar cuando las ramas superiores se tornen amarillas.',
+                totalDays: 110,
+                kc: 1.10,
+                pests: [
+                    { name: 'Polilla de la Papa', type: 'Plaga', solution: 'Aporcado alto para proteger tubérculos subterráneos.' }
+                ],
+                stages: [
+                    { name: 'Emergencia', durationDays: 20, description: 'Salida de brotes desde la tierra.' },
+                    { name: 'Desarrollo Vegetativo', durationDays: 25, description: 'Crecimiento follaje y ramas.' },
+                    { name: 'Iniciación Tubérculos', durationDays: 20, description: 'Formación de estolones bajo tierra.' },
+                    { name: 'Engorde de la Papa', durationDays: 30, description: 'Acumulación de almidón.' },
+                    { name: 'Cosecha', durationDays: 15, description: 'Maduración de la piel y desenterramiento.' }
+                ],
+                idealTemp: '15°C - 20°C',
+                soilType: 'Suelo francos o arenosos, sueltos y bien drenados.'
+            },
+            {
+                id: 'palto',
+                name: 'Palto / Aguacate',
+                scientificName: 'Persea americana',
+                category: 'Frutal',
+                icon: 'fa-tree',
+                color: 'bg-green-700',
+                waterFrequencyDays: 6,
+                waterMethod: 'Microaspersión o goteo profundo. Sensible a encharcar.',
+                harvestType: 'Tijera de Podar',
+                harvestDescription: 'Cortar con 1 cm de pedúnculo cuando adquiera tono verde mate.',
+                totalDays: 240,
+                kc: 0.85,
+                pests: [
+                    { name: 'Arañita Roja del Palto', type: 'Plaga', solution: 'Azufre mojable o bio-control con ácaros depredadores.' }
+                ],
+                stages: [
+                    { name: 'Brotación Primavera', durationDays: 45, description: 'Brotes foliares tiernos.' },
+                    { name: 'Floración Abundante', durationDays: 40, description: 'Flores pequeñas en panículas.' },
+                    { name: 'Cuajado', durationDays: 35, description: 'Fijación de paltas pequeñas.' },
+                    { name: 'Engorde y Aceites', durationDays: 90, description: 'Desarrollo y acumulación de grasas saludables.' },
+                    { name: 'Ventana Cosecha', durationDays: 30, description: 'Recolección según materia seca.' }
+                ],
+                idealTemp: '16°C - 26°C',
+                soilType: 'Suelo muy profundo y excelente drenaje (pH 6.0 - 7.0).'
+            },
+            {
+                id: 'maiz',
+                name: 'Maíz / Choclo',
+                scientificName: 'Zea mays',
+                category: 'Cereal/Tubérculo',
+                icon: 'fa-wheat-awn',
+                color: 'bg-yellow-500',
+                waterFrequencyDays: 3,
+                waterMethod: 'Abundante en la fase de floración y barbas.',
+                harvestType: 'Corte de Mazorca',
+                harvestDescription: 'Barbas marrones secas y grano con jugo lechoso al presionar.',
+                totalDays: 100,
+                kc: 1.15,
+                pests: [
+                    { name: 'Gusano Cogollero', type: 'Plaga', solution: 'Aplicar Bacillus thuringiensis en el cogollo.' }
+                ],
+                stages: [
+                    { name: 'Emergencia', durationDays: 10, description: 'Hojas iniciales.' },
+                    { name: 'Crecimiento Rápido', durationDays: 30, description: 'Formación de caña y hojas anchas.' },
+                    { name: 'Floración y Barbas', durationDays: 20, description: 'Emisión de panoja y estigmas.' },
+                    { name: 'Llenado de Grano', durationDays: 25, description: 'Acumulación de almidones.' },
+                    { name: 'Madurez', durationDays: 15, description: 'Mazorca lista para cosecha.' }
+                ],
+                idealTemp: '18°C - 30°C',
+                soilType: 'Suelo profundo y rico en Nitrógeno.'
+            },
+            {
+                id: 'frutilla',
+                name: 'Frutilla / Fresa',
+                scientificName: 'Fragaria × ananassa',
+                category: 'Frutal',
+                icon: 'fa-strawberry',
+                color: 'bg-rose-500',
+                waterFrequencyDays: 2,
+                waterMethod: 'Goteo bajo acolchado de plástico o paja.',
+                harvestType: 'Manual Frecuente',
+                harvestDescription: 'Frutos 90% rojos y fragantes.',
+                totalDays: 90,
+                kc: 0.85,
+                pests: [
+                    { name: 'Botrytis / Podredumbre Gris', type: 'Hongo', solution: 'Mantener frutos aislados de la tierra húmeda con acolchado.' }
+                ],
+                stages: [
+                    { name: 'Establecimiento', durationDays: 15, description: 'Emisión de raíces y hojas.' },
+                    { name: 'Floración', durationDays: 20, description: 'Flores blancas con centro amarillo.' },
+                    { name: 'Fructificación', durationDays: 35, description: 'Engorde del fruto verde a rojo.' },
+                    { name: 'Cosecha Frecuente', durationDays: 20, description: 'Recolección cada 2-3 días.' }
+                ],
+                idealTemp: '15°C - 25°C',
+                soilType: 'Suelo franco-arenoso, rico en materia orgánica.'
+            },
+            {
+                id: 'zanahoria',
+                name: 'Zanahoria',
+                scientificName: 'Daucus carota',
+                category: 'Hortaliza',
+                icon: 'fa-carrot',
+                color: 'bg-orange-500',
+                waterFrequencyDays: 3,
+                waterMethod: 'Riego constante y uniforme para evitar agrietado.',
+                harvestType: 'Extracción Manual',
+                harvestDescription: 'Tirar de la corona cuando el hombro de la raíz tenga 2-3 cm.',
+                totalDays: 80,
+                kc: 0.90,
+                pests: [
+                    { name: 'Mosca de la Zanahoria', type: 'Plaga', solution: 'Asociación de cultivo con cebollas o puerros.' }
+                ],
+                stages: [
+                    { name: 'Germinación Lenta', durationDays: 15, description: 'Surgimiento de plántula fina.' },
+                    { name: 'Desarrollo Foliar', durationDays: 25, description: 'Hojas plumosas verdes.' },
+                    { name: 'Engorde de Raíz', durationDays: 30, description: 'Pigmentación naranja y engorde.' },
+                    { name: 'Cosecha', durationDays: 10, description: 'Extracción de raíces dulces.' }
+                ],
+                idealTemp: '12°C - 20°C',
+                soilType: 'Suelo arenoso, suelto y libre de piedras para evitar deformación.'
+            },
+            {
+                id: 'pimiento',
+                name: 'Pimiento / Ají',
+                scientificName: 'Capsicum annuum',
+                category: 'Hortaliza',
+                icon: 'fa-pepper-hot',
+                color: 'bg-red-600',
+                waterFrequencyDays: 2,
+                waterMethod: 'Riego por goteo moderado. Sensible a sequía en floración.',
+                harvestType: 'Corte con Tijera',
+                harvestDescription: 'Frutos firmes de color verde brillante o rojo maduro.',
+                totalDays: 110,
+                kc: 1.05,
+                pests: [
+                    { name: 'Pulgones / Trips', type: 'Plaga', solution: 'Infusión de ajo y jabón potásico.' }
+                ],
+                stages: [
+                    { name: 'Almacigo', durationDays: 15, description: 'Germinación de la semilla.' },
+                    { name: 'Crecimiento', durationDays: 30, description: 'Formación de mata erguida.' },
+                    { name: 'Floración', durationDays: 25, description: 'Flores pequeñas blancas.' },
+                    { name: 'Engorde Fruto', durationDays: 30, description: 'Desarrollo de pared gruesa.' },
+                    { name: 'Cosecha', durationDays: 10, description: 'Corte de pimientos.' }
+                ],
+                idealTemp: '20°C - 30°C',
+                soilType: 'Suelo cálido, rico en materia orgánica y bien drenado.'
+            }
+        ];
+
+        // Weather Simulation State
+        let weatherState = {
+            rainExpectedMm: 18,
+            temperature: 21,
+            humidity: 78,
+            condition: 'Lluvia Moderada'
+        };
+
+        // Soil Data State
+        let soilData = JSON.parse(localStorage.getItem('agrotiempos_soil_data')) || {
+            ph: 5.4,
+            n: 22,
+            p: 14,
+            k: 180,
+            om: 3.2,
+            moisture: 68,
+            lastDate: '2026-08-12'
+        };
+
+        // User Crops State
+        let myCrops = JSON.parse(localStorage.getItem('agrotiempos_my_crops')) || [
+            {
+                id: 'crop-demo-1',
+                name: 'Tomates Parcela Travesía',
+                cropTypeId: 'tomate',
+                plantDate: '2026-07-15',
+                size: '20 m²',
+                location: '-33.0245, -71.5518 (Viña del Mar)',
+                soilType: 'Franco-Arcilloso',
+                sunExposure: 'Sol Pleno (>6h)',
+                irrigationSystem: 'Goteo Directo',
+                environment: 'Aire Libre',
+                notes: 'Abonado con compost de lombriz.',
+                lastWatered: new Date().toISOString().split('T')[0]
+            },
+            {
+                id: 'crop-demo-2',
+                name: 'Frutillas del Invernadero',
+                cropTypeId: 'frutilla',
+                plantDate: '2026-08-01',
+                size: '10 m²',
+                location: '-33.0245, -71.5518',
+                soilType: 'Franco',
+                sunExposure: 'Sol Pleno (>6h)',
+                irrigationSystem: 'Goteo Directo',
+                environment: 'Invernadero / Túnel',
+                notes: 'Mulching de paja instalado.',
+                lastWatered: '2026-08-28'
+            }
+        ];
+
+        // Tasks State
+        let userTasks = JSON.parse(localStorage.getItem('agrotiempos_tasks')) || [
+            { id: 'task-1', title: 'Aplicar Cal Agrícola para elevación de pH', category: 'Fertilización', date: '2026-09-10', cropName: 'Tomates Parcela Travesía', done: false },
+            { id: 'task-2', title: 'Inspeccionar envés de hojas por Pulgones', category: 'Control de Plagas', date: '2026-09-05', cropName: 'Frutillas del Invernadero', done: true }
+        ];
+
+        let currentCatalogCategory = 'ALL';
+        let soilChartInstance = null;
+
+        // App Initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            populateCropSelects();
+            renderSoilDashboard();
+            renderMyCrops();
+            renderCatalog();
+            renderTasks();
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            document.getElementById('calc-date-input').value = todayStr;
+            document.getElementById('add-crop-date').value = todayStr;
+            document.getElementById('task-input-date').value = todayStr;
+            document.getElementById('soil-input-date').value = soilData.lastDate;
+        });
+
+        function populateCropSelects() {
+            const addSelect = document.getElementById('add-crop-type');
+            const calcSelect = document.getElementById('calc-crop-select');
+            const taskSelect = document.getElementById('task-input-crop');
+
+            addSelect.innerHTML = '';
+            calcSelect.innerHTML = '';
+            taskSelect.innerHTML = '<option value="General">General / Todo el campo</option>';
+
+            CROP_DATABASE.forEach(crop => {
+                const opt1 = document.createElement('option');
+                opt1.value = crop.id;
+                opt1.textContent = `${crop.name} (${crop.category})`;
+                addSelect.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = crop.id;
+                opt2.textContent = `${crop.name} - Ciclo ~${crop.totalDays} días`;
+                calcSelect.appendChild(opt2);
+            });
+
+            myCrops.forEach(crop => {
+                const opt = document.createElement('option');
+                opt.value = crop.name;
+                opt.textContent = crop.name;
+                taskSelect.appendChild(opt);
+            });
+            updateKcValue;
+        }
+
+        // Navigation Tabs Controller
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            const target = document.getElementById(`tab-${tabId}`);
+            if (target) target.classList.remove('hidden');
+
+            document.querySelectorAll('nav button').forEach(btn => {
+                btn.classList.remove('bg-agro-800', 'text-white');
+                btn.classList.add('text-agro-100');
+            });
+            const activeNavBtn = document.getElementById(`nav-${tabId}`);
+            if (activeNavBtn) activeNavBtn.classList.add('bg-agro-800', 'text-white');
+
+            document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+                btn.classList.remove('text-agro-300');
+                btn.classList.add('text-agro-200');
+            });
+            const activeMobBtn = document.getElementById(`mob-${tabId}`);
+            if (activeMobBtn) activeMobBtn.classList.add('text-agro-300');
+
+            if (tabId === 'soil') {
+                setTimeout(initSoilCharts, 100);
+            }
+        }
+
+        function toggleRainSimulation() {
+            if (weatherState.rainExpectedMm > 0) {
+                weatherState.rainExpectedMm = 0;
+                weatherState.condition = 'Soleado / Despejado';
+                document.getElementById('stat-rain-mm').innerText = '0 mm';
+                document.getElementById('rain-alert-pill').className = 'bg-amber-900/90 text-amber-200 border border-amber-600 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-2';
+                document.getElementById('rain-alert-pill').innerHTML = '<i class="fa-solid fa-sun text-amber-300 text-sm"></i><span><strong>Clima Despejado:</strong> Sin precipitaciones hoy. Mantener riego.</span>';
+                document.getElementById('rain-status-box').classList.add('hidden');
+            } else {
+                weatherState.rainExpectedMm = 18;
+                weatherState.condition = 'Lluvia Moderada';
+                document.getElementById('stat-rain-mm').innerText = '18 mm';
+                document.getElementById('rain-alert-pill').className = 'bg-sky-900/90 text-sky-200 border border-sky-600 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-2 animate-pulse';
+                document.getElementById('rain-alert-pill').innerHTML = '<i class="fa-solid fa-cloud-rain text-sky-300 text-sm"></i><span><strong>Aviso Climático:</strong> Se esperan 18 mm de lluvia. Riegos automáticos suspendidos.</span>';
+                document.getElementById('rain-status-box').classList.remove('hidden');
+            }
+            renderMyCrops();
+        }
+
+        // Calculate Fenological Stage Details
+        function calculateCropStatus(myCrop) {
+            const baseCrop = CROP_DATABASE.find(c => c.id === myCrop.cropTypeId) || CROP_DATABASE[0];
+            const startDate = new Date(myCrop.plantDate);
+            const today = new Date();
+            
+            const diffTime = Math.max(0, today - startDate);
+            let elapsedDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            if (myCrop.soilType === 'Arenoso') elapsedDays = Math.round(elapsedDays * 1.05);
+            if (myCrop.environment === 'Invernadero / Túnel') elapsedDays = Math.round(elapsedDays * 1.1);
+
+            let currentStage = baseCrop.stages[baseCrop.stages.length - 1];
+            let daysAccumulated = 0;
+
+            for (let i = 0; i < baseCrop.stages.length; i++) {
+                const stage = baseCrop.stages[i];
+                if (elapsedDays < daysAccumulated + stage.durationDays) {
+                    currentStage = stage;
+                    break;
+                }
+                daysAccumulated += stage.durationDays;
+            }
+
+            const stageElapsedDays = elapsedDays - daysAccumulated;
+            const stagePercent = Math.min(100, Math.round((stageElapsedDays / currentStage.durationDays) * 100));
+            const totalPercent = Math.min(100, Math.round((elapsedDays / baseCrop.totalDays) * 100));
+
+            const lastWateredDate = myCrop.lastWatered ? new Date(myCrop.lastWatered) : startDate;
+            const daysSinceWatered = Math.floor((today - lastWateredDate) / (1000 * 60 * 60 * 24));
+            
+            let needsWaterToday = daysSinceWatered >= baseCrop.waterFrequencyDays;
+            let rainSuspended = false;
+
+            if (weatherState.rainExpectedMm >= 10 && myCrop.environment !== 'Invernadero / Túnel') {
+                needsWaterToday = false;
+                rainSuspended = true;
+            }
+
+            return {
+                baseCrop,
+                elapsedDays,
+                totalDays: baseCrop.totalDays,
+                currentStageName: currentStage.name,
+                stageDescription: currentStage.description,
+                stageElapsedDays: Math.max(0, stageElapsedDays),
+                stageDurationDays: currentStage.durationDays,
+                stagePercent: Math.max(0, stagePercent),
+                totalPercent,
+                daysSinceWatered,
+                needsWaterToday,
+                rainSuspended,
+                isHarvestReady: totalPercent >= 85
+            };
+        }
+
+        // Render My Field Active Crops Grid
+        function renderMyCrops() {
+            const container = document.getElementById('my-crops-container');
+            const emptyState = document.getElementById('my-crops-empty');
+            const searchVal = document.getElementById('my-crops-search').value.toLowerCase();
+            const stageVal = document.getElementById('my-crops-filter-stage').value;
+
+            container.innerHTML = '';
+
+            const filtered = myCrops.filter(item => {
+                const base = CROP_DATABASE.find(c => c.id === item.cropTypeId);
+                const nameMatches = item.name.toLowerCase().includes(searchVal) || (base && base.name.toLowerCase().includes(searchVal));
+                if (!nameMatches) return false;
+                
+                if (stageVal !== 'ALL') {
+                    const status = calculateCropStatus(item);
+                    if (stageVal === 'Listo para Cosecha' && !status.isHarvestReady) return false;
+                    if (stageVal !== 'Listo para Cosecha' && status.currentStageName !== stageVal) return false;
+                }
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            filtered.forEach(cropItem => {
+                const status = calculateCropStatus(cropItem);
+                const base = status.baseCrop;
+
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition flex flex-col justify-between";
+
+                card.innerHTML = `
+                    <div>
+                        <div class="p-5 border-b border-slate-100 flex items-start justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 rounded-xl ${base.color} text-white flex items-center justify-center text-xl shadow-md">
+                                    <i class="fa-solid ${base.icon}"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-900 text-base leading-snug">${cropItem.name}</h3>
+                                    <span class="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                                        <i class="fa-solid fa-location-dot text-red-500"></i> ${cropItem.location || 'Terreno Registrado'}
+                                    </span>
+                                </div>
+                            </div>
+                            <button onclick="deleteCrop('${cropItem.id}')" class="text-slate-400 hover:text-red-500 p-1 text-sm" title="Eliminar parcela">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+
+                        <div class="p-5 space-y-4">
+                            <div class="flex flex-wrap gap-1 text-[11px]">
+                                <span class="bg-earth-100 text-earth-900 px-2 py-0.5 rounded font-medium"><i class="fa-solid fa-mountain mr-1"></i>${cropItem.soilType || 'Suelo Franco'}</span>
+                                <span class="bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-medium"><i class="fa-solid fa-sun mr-1"></i>${cropItem.sunExposure || 'Sol Pleno'}</span>
+                                <span class="bg-blue-100 text-blue-900 px-2 py-0.5 rounded font-medium"><i class="fa-solid fa-faucet-drip mr-1"></i>${cropItem.irrigationSystem || 'Goteo'}</span>
+                                <span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-medium">${cropItem.environment || 'Aire Libre'}</span>
+                            </div>
+
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Etapa Actual</span>
+                                <span class="badge-stage text-xs font-bold px-2.5 py-1 rounded-full ${status.isHarvestReady ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-agro-100 text-agro-800 border border-agro-200'} flex items-center gap-1">
+                                    <i class="fa-solid ${status.isHarvestReady ? 'fa-basket-shopping' : 'fa-seedling'}"></i>
+                                    ${status.currentStageName}
+                                </span>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-xs font-medium text-slate-600 mb-1">
+                                    <span>Avance (${status.stageElapsedDays} de ${status.stageDurationDays} días)</span>
+                                    <span class="font-bold text-agro-700">${status.stagePercent}%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                                    <div class="bg-agro-500 h-full rounded-full transition-all duration-500" style="width: ${status.stagePercent}%"></div>
+                                </div>
+                                <p class="text-[11px] text-slate-500 italic mt-1.5 leading-tight">${status.stageDescription}</p>
+                            </div>
+
+                            ${status.rainSuspended ? `
+                                <div class="p-3 rounded-xl text-xs bg-sky-50 border border-sky-300 text-sky-900 font-medium space-y-1">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-bold flex items-center gap-1.5">
+                                            <i class="fa-solid fa-cloud-showers-heavy text-sky-600"></i>
+                                            Riego suspendido hoy (Lluvia 18 mm).
+                                        </span>
+                                    </div>
+                                    <p class="text-[10px] text-sky-700">Aprovecha la humedad natural de la precipitación.</p>
+                                </div>
+                            ` : `
+                                <div class="p-3 rounded-xl text-xs flex items-center justify-between ${status.needsWaterToday ? 'bg-blue-50 text-blue-900 border border-blue-200 font-medium' : 'bg-slate-50 text-slate-700 border border-slate-200'}">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fa-solid fa-droplet ${status.needsWaterToday ? 'text-blue-600 animate-bounce' : 'text-slate-400'} text-base"></i>
+                                        <div>
+                                            <span>${status.needsWaterToday ? '¡Requiere Riego Hoy!' : `Próximo riego en ~${Math.max(1, base.waterFrequencyDays - status.daysSinceWatered)} días`}</span>
+                                            <p class="text-[10px] text-slate-500">Frecuencia recomendada: cada ${base.waterFrequencyDays} días</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="markWatered('${cropItem.id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-2.5 py-1.5 rounded-lg text-xs shadow-sm transition whitespace-nowrap">
+                                        <i class="fa-solid fa-check mr-1"></i> Regar
+                                    </button>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 px-5 py-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                        <button onclick="openCropDetailModal('${base.id}')" class="text-agro-700 hover:text-agro-900 font-bold flex items-center gap-1">
+                            <i class="fa-solid fa-circle-info"></i> Ficha & Plagas
+                        </button>
+                        <span class="text-slate-400">Siembra: ${cropItem.plantDate}</span>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+
+            updateGlobalStats();
+        }
+
+        function markWatered(cropId) {
+            const crop = myCrops.find(c => c.id === cropId);
+            if (crop) {
+                crop.lastWatered = new Date().toISOString().split('T')[0];
+                localStorage.setItem('agrotiempos_my_crops', JSON.stringify(myCrops));
+                renderMyCrops();
+            }
+        }
+
+        function deleteCrop(cropId) {
+            if (confirm('¿Estás seguro de eliminar esta parcela?')) {
+                myCrops = myCrops.filter(c => c.id !== cropId);
+                localStorage.setItem('agrotiempos_my_crops', JSON.stringify(myCrops));
+                populateCropSelects();
+                renderMyCrops();
+            }
+        }
+
+        // Soil Dashboard Rendering & Chart.js Integration
+        function renderSoilDashboard() {
+    // 1. Valores numéricos
+    document.getElementById('soil-display-ph').innerText = soilData.ph;
+    document.getElementById('soil-display-n').innerText = `${soilData.n} ppm`;
+    document.getElementById('soil-display-p').innerText = `${soilData.p} ppm`;
+    document.getElementById('soil-display-k').innerText = `${soilData.k} ppm`;
+    document.getElementById('soil-display-om').innerText = `${soilData.om}%`;
+    document.getElementById('soil-display-moisture').innerText = `${soilData.moisture}%`;
+    document.getElementById('soil-last-date').innerText = soilData.lastDate;
+
+    // 2. Evaluador dinámico de pH
+    const tagPh = document.getElementById('soil-tag-ph');
+    if (soilData.ph < 5.5) {
+        tagPh.className = "text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full mt-1 inline-block";
+        tagPh.innerText = "Muy Ácido";
+    } else if (soilData.ph <= 6.8) {
+        tagPh.className = "text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full mt-1 inline-block";
+        tagPh.innerText = "Óptimo";
+    } else {
+        tagPh.className = "text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full mt-1 inline-block";
+        tagPh.innerText = "Alcalino";
+    }
+
+    // 3. Evaluador dinámico de Nitrógeno (N) - Rango Óptimo base ~30 ppm
+    const tagN = document.getElementById('soil-tag-n');
+    if (soilData.n < 15) {
+        tagN.className = "text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full mt-1 inline-block";
+        tagN.innerText = "Deficiente";
+    } else if (soilData.n <= 25) {
+        tagN.className = "text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full mt-1 inline-block";
+        tagN.innerText = "Ligeramente Bajo";
+    } else {
+        tagN.className = "text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full mt-1 inline-block";
+        tagN.innerText = "Adecuado / Óptimo";
+    }
+
+    // 4. Evaluador dinámico de Fósforo (P) - Rango Óptimo base ~25 ppm
+    const tagP = document.getElementById('soil-tag-p');
+    if (soilData.p < 10) {
+        tagP.className = "text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full mt-1 inline-block";
+        tagP.innerText = "Muy Bajo";
+    } else if (soilData.p <= 20) {
+        tagP.className = "text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full mt-1 inline-block";
+        tagP.innerText = "Ligeramente Bajo";
+    } else {
+        tagP.className = "text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full mt-1 inline-block";
+        tagP.innerText = "Óptimo";
+    }
+
+    // 5. Evaluador dinámico de Potasio (K) - Rango Óptimo base ~200 ppm
+    const tagK = document.getElementById('soil-tag-k');
+    if (soilData.k < 100) {
+        tagK.className = "text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full mt-1 inline-block";
+        tagK.innerText = "Deficiente";
+    } else if (soilData.k < 170) {
+        tagK.className = "text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full mt-1 inline-block";
+        tagK.innerText = "Ligeramente Bajo";
+    } else {
+        tagK.className = "text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full mt-1 inline-block";
+        tagK.innerText = "Óptimo";
+    }
+
+    // 6. Evaluador dinámico de Materia Orgánica (M.O.)
+    const tagOm = document.getElementById('soil-tag-om');
+    if (soilData.om < 2.0) {
+        tagOm.className = "text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full mt-1 inline-block";
+        tagOm.innerText = "Pobre";
+    } else if (soilData.om < 3.0) {
+        tagOm.className = "text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full mt-1 inline-block";
+        tagOm.innerText = "Moderado";
+    } else {
+        tagOm.className = "text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full mt-1 inline-block";
+        tagOm.innerText = "Buen Contenido";
+    }
+
+    // 7. Evaluador dinámico de Humedad
+    const tagMoisture = document.getElementById('soil-tag-moisture');
+    if (soilData.moisture < 30) {
+        tagMoisture.className = "text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full mt-1 inline-block";
+        tagMoisture.innerText = "Suelo Seco";
+    } else if (soilData.moisture <= 60) {
+        tagMoisture.className = "text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full mt-1 inline-block";
+        tagMoisture.innerText = "Humedad Ideal";
+    } else {
+        tagMoisture.className = "text-[10px] bg-sky-100 text-sky-800 font-semibold px-2 py-0.5 rounded-full mt-1 inline-block";
+        tagMoisture.innerText = "Saturado (Lluvia)";
+    }
+
+    // 8. Diagnóstico textual dinámico
+    let advice = `Tu suelo presenta un pH de <strong>${soilData.ph}</strong>. `;
+    if (soilData.ph < 5.8) {
+        advice += `Para la mayoría de hortalizas se aconseja aplicar enmienda calcárea (100-150 g/m² de cal agrícola) para elevar progresivamente el pH a 6.2 - 6.5.`;
+    } else if (soilData.ph > 7.5) {
+        advice += `El suelo es alcalino. Se recomienda adición de azufre elemental o materia orgánica compostada para desbloquear la asimilación de Fósforo y Hierro.`;
+    } else {
+        advice += `El nivel de acidez está en el rango ideal (6.0 - 7.0) para la gran mayoría de cultivos de huerta.`;
+    }
+
+    if (soilData.k < 170) {
+        advice += ` Además, el nivel de Potasio (${soilData.k} ppm) es bajo, por lo que se sugiere aplicar compost rico en ceniza o sulfato de potasio.`;
+    }
+
+    document.getElementById('soil-advice-text').innerHTML = `"${advice}"`;
+}
+        function initSoilCharts() {
+            // Chart: N-P-K Nutrients Bar Chart
+            const ctxNutrient = document.getElementById('soilNutrientChart')?.getContext('2d');
+            if (ctxNutrient) {
+                if (soilChartInstance) soilChartInstance.destroy();
+                soilChartInstance = new Chart(ctxNutrient, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Nitrógeno (N)', 'Fósforo (P)', 'Potasio (K)'],
+                        datasets: [
+                            {
+                                label: 'Tu Suelo (ppm)',
+                                data: [soilData.n, soilData.p, soilData.k],
+                                backgroundColor: ['#10b981', '#3b82f6', '#8b5cf6'],
+                                borderRadius: 8
+                            },
+                            {
+                                label: 'Nivel Óptimo Recomendado (ppm)',
+                                data: [30, 25, 200],
+                                backgroundColor: '#e2e8f0',
+                                borderRadius: 8
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            }
+        }
+
+        function openSoilModal() {
+            document.getElementById('soil-input-ph').value = soilData.ph;
+            document.getElementById('soil-input-n').value = soilData.n;
+            document.getElementById('soil-input-p').value = soilData.p;
+            document.getElementById('soil-input-k').value = soilData.k;
+            document.getElementById('soil-input-om').value = soilData.om;
+            document.getElementById('soil-input-moisture').value = soilData.moisture;
+            document.getElementById('soil-input-date').value = soilData.lastDate;
+            document.getElementById('modal-soil').classList.remove('hidden');
+        }
+
+        function closeSoilModal() {
+            document.getElementById('modal-soil').classList.add('hidden');
+        }
+
+        function saveSoilData(e) {
+            e.preventDefault();
+            soilData.ph = parseFloat(document.getElementById('soil-input-ph').value);
+            soilData.n = parseInt(document.getElementById('soil-input-n').value);
+            soilData.p = parseInt(document.getElementById('soil-input-p').value);
+            soilData.k = parseInt(document.getElementById('soil-input-k').value);
+            soilData.om = parseFloat(document.getElementById('soil-input-om').value);
+            soilData.moisture = parseInt(document.getElementById('soil-input-moisture').value);
+            soilData.lastDate = document.getElementById('soil-input-date').value;
+
+            localStorage.setItem('agrotiempos_soil_data', JSON.stringify(soilData));
+            closeSoilModal();
+            renderSoilDashboard();
+            initSoilCharts();
+        }
+
+        function askAIAboutSoil() {
+            switchTab('ai-assistant');
+            const prompt = `Analiza mi suelo actual: pH ${soilData.ph}, Nitrógeno ${soilData.n} ppm, Fósforo ${soilData.p} ppm, Potasio ${soilData.k} ppm, Materia Orgánica ${soilData.om}%. ¿Qué enmiendas específicas me recomiendas aplicar antes de sembrar?`;
+            sendPresetQuery(prompt);
+        }
+
+        // GPS Location Detector
+        function detectGPSLocation() {
+            const locInput = document.getElementById('add-crop-location');
+            if (navigator.geolocation) {
+                locInput.value = "Obteniendo coordenadas GPS...";
+                navigator.geolocation.getCurrentPosition(
+                    pos => {
+                        const lat = pos.coords.latitude.toFixed(4);
+                        const lon = pos.coords.longitude.toFixed(4);
+                        locInput.value = `${lat}, ${lon} (Viña del Mar GPS)`;
+                    },
+                    err => {
+                        locInput.value = "-33.0245, -71.5518 (Coordenadas por defecto)";
+                    }
+                );
+            } else {
+                locInput.value = "-33.0245, -71.5518 (Coordenadas por defecto)";
+            }
+        }
+
+        // Render Catalog & Pests
+        function renderCatalog() {
+            const container = document.getElementById('catalog-grid');
+            const searchVal = document.getElementById('catalog-search').value.toLowerCase();
+            container.innerHTML = '';
+
+            const filtered = CROP_DATABASE.filter(crop => {
+                const matchesSearch = crop.name.toLowerCase().includes(searchVal) || crop.scientificName.toLowerCase().includes(searchVal);
+                const matchesCat = currentCatalogCategory === 'ALL' || crop.category === currentCatalogCategory;
+                return matchesSearch && matchesCat;
+            });
+
+            filtered.forEach(crop => {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between";
+
+                card.innerHTML = `
+                    <div class="p-5">
+                        <div class="flex items-center space-x-3 mb-3">
+                            <div class="w-12 h-12 rounded-xl ${crop.color} text-white flex items-center justify-center text-xl shadow">
+                                <i class="fa-solid ${crop.icon}"></i>
+                            </div>
+                            <div>
+                                <span class="text-[10px] uppercase tracking-wider font-extrabold text-agro-700 bg-agro-50 px-2 py-0.5 rounded">${crop.category}</span>
+                                <h3 class="text-lg font-bold text-slate-900">${crop.name}</h3>
+                                <p class="text-xs text-slate-400 italic">${crop.scientificName}</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 text-xs mb-4 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                            <div>
+                                <span class="text-slate-400 block text-[10px]">Ciclo Total:</span>
+                                <span class="font-bold text-slate-800">${crop.totalDays} Días</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-400 block text-[10px]">Riego Frecuencia:</span>
+                                <span class="font-bold text-blue-600">Cada ${crop.waterFrequencyDays} días</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-400 block text-[10px]">Temp. Ideal:</span>
+                                <span class="font-bold text-amber-700">${crop.idealTemp}</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-400 block text-[10px]">Coef. Kc Promedio:</span>
+                                <span class="font-bold text-emerald-700">${crop.kc}</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1 text-xs">
+                            <span class="font-bold text-slate-700 block">Plagas Comunes:</span>
+                            <div class="flex flex-wrap gap-1">
+                                ${crop.pests.map(p => `<span class="bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded text-[11px] font-medium"><i class="fa-solid fa-bug mr-1"></i>${p.name}</span>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 px-5 py-3 border-t border-slate-100 flex items-center justify-between">
+                        <button onclick="openCropDetailModal('${crop.id}')" class="w-full bg-agro-600 hover:bg-agro-700 text-white font-bold py-2 px-4 rounded-xl text-xs transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-book-open"></i> Ver Ficha Completa & Plagas
+                        </button>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function filterCatalogCategory(cat) {
+            currentCatalogCategory = cat;
+            document.querySelectorAll('.cat-filter-btn').forEach(btn => {
+                btn.className = "cat-filter-btn text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100";
+            });
+            event.target.className = "cat-filter-btn active text-xs font-semibold px-3 py-1.5 rounded-lg border border-agro-600 bg-agro-600 text-white";
+            renderCatalog();
+        }
+
+        // Open Crop Detail & Diseases Modal
+        function openCropDetailModal(cropId) {
+            const crop = CROP_DATABASE.find(c => c.id === cropId);
+            if (!crop) return;
+
+            const modalContent = document.getElementById('crop-detail-content');
+            modalContent.innerHTML = `
+                <div class="${crop.color} text-white p-6 relative">
+                    <button onclick="closeCropDetailModal()" class="absolute top-4 right-4 text-white/80 hover:text-white text-2xl">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <div class="flex items-center space-x-4">
+                        <div class="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-3xl shadow-inner">
+                            <i class="fa-solid ${crop.icon}"></i>
+                        </div>
+                        <div>
+                            <span class="bg-white/20 text-white text-xs px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">${crop.category}</span>
+                            <h2 class="text-2xl font-black mt-1">${crop.name}</h2>
+                            <p class="text-xs text-white/80 italic">${crop.scientificName}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 space-y-6 text-xs text-slate-700">
+                    <!-- Key Technical Specifications -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div>
+                            <span class="text-slate-400 block font-semibold">Ciclo Completo</span>
+                            <strong class="text-slate-800 text-sm">${crop.totalDays} Días</strong>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 block font-semibold">Riego Sugerido</span>
+                            <strong class="text-blue-600 text-sm">Cada ${crop.waterFrequencyDays} días</strong>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 block font-semibold">Temperatura Ideal</span>
+                            <strong class="text-amber-700 text-sm">${crop.idealTemp}</strong>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 block font-semibold">Suelo Aconsejado</span>
+                            <strong class="text-earth-700 text-xs">${crop.soilType}</strong>
+                        </div>
+                    </div>
+
+                    <!-- Water & Harvest Technique -->
+                    <div class="space-y-3">
+                        <h4 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-droplet text-blue-500"></i> Técnica de Riego y Cosecha
+                        </h4>
+                        <div class="bg-blue-50/60 p-3 rounded-xl border border-blue-100 space-y-2">
+                            <p><strong>Riego:</strong> ${crop.waterMethod}</p>
+                            <p><strong>Método Cosecha (${crop.harvestType}):</strong> ${crop.harvestDescription}</p>
+                        </div>
+                    </div>
+
+                    <!-- Phenological Stages Breakdown -->
+                    <div class="space-y-3">
+                        <h4 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-list-ol text-agro-600"></i> Etapas Fenológicas
+                        </h4>
+                        <div class="space-y-2">
+                            ${crop.stages.map((stg, idx) => `
+                                <div class="flex items-start space-x-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                                    <span class="w-6 h-6 rounded-full bg-agro-700 text-white font-bold flex items-center justify-center text-xs flex-shrink-0">${idx + 1}</span>
+                                    <div>
+                                        <h5 class="font-bold text-slate-800 text-xs">${stg.name} <span class="text-slate-400 font-normal">(${stg.durationDays} días)</span></h5>
+                                        <p class="text-[11px] text-slate-500">${stg.description}</p>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Pests & Organic Controls -->
+                    <div class="space-y-3">
+                        <h4 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-shield-virus text-red-500"></i> Plagas y Tratamientos Orgánicos
+                        </h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            ${crop.pests.map(pest => `
+                                <div class="bg-red-50/50 p-3 rounded-xl border border-red-200 space-y-1">
+                                    <div class="flex items-center justify-between">
+                                        <strong class="text-red-900 font-bold text-xs">${pest.name}</strong>
+                                        <span class="text-[10px] bg-red-200 text-red-800 font-semibold px-2 py-0.5 rounded-full">${pest.type}</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-700"><strong>Solución Orgánica:</strong> ${pest.solution}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-slate-100 border-t border-slate-200 flex justify-end">
+                    <button onclick="closeCropDetailModal()" class="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition">
+                        Cerrar Ficha
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('modal-crop-detail').classList.remove('hidden');
+        }
+
+        function closeCropDetailModal() {
+            document.getElementById('modal-crop-detail').classList.add('hidden');
+        }
+
+        // Add New Crop Modal Logic
+        function openAddCropModal() {
+            document.getElementById('modal-add-crop').classList.remove('hidden');
+        }
+
+        function closeAddCropModal() {
+            document.getElementById('modal-add-crop').classList.add('hidden');
+        }
+
+        function saveNewCrop(e) {
+            e.preventDefault();
+            const newCrop = {
+                id: 'crop-' + Date.now(),
+                name: document.getElementById('add-crop-name').value,
+                cropTypeId: document.getElementById('add-crop-type').value,
+                plantDate: document.getElementById('add-crop-date').value,
+                location: document.getElementById('add-crop-location').value || 'Terreno Registrado',
+                soilType: document.getElementById('add-crop-soil').value,
+                sunExposure: document.getElementById('add-crop-sun').value,
+                irrigationSystem: document.getElementById('add-crop-irrigation').value,
+                environment: document.getElementById('add-crop-env').value,
+                size: document.getElementById('add-crop-size').value || '10 m²',
+                notes: document.getElementById('add-crop-notes').value,
+                lastWatered: new Date().toISOString().split('T')[0]
+            };
+
+            myCrops.push(newCrop);
+            localStorage.setItem('agrotiempos_my_crops', JSON.stringify(myCrops));
+
+            closeAddCropModal();
+            populateCropSelects();
+            renderMyCrops();
+        }
+
+        // Tasks & Diario Manager
+        function renderTasks() {
+            const container = document.getElementById('tasks-container');
+            container.innerHTML = '';
+
+            if (userTasks.length === 0) {
+                container.innerHTML = `<div class="text-center text-slate-400 py-8 text-sm">No tienes labores registradas. Haz clic en "Nueva Labor" para programar.</div>`;
+                return;
+            }
+
+            userTasks.forEach(task => {
+                const item = document.createElement('div');
+                item.className = `p-4 rounded-xl border ${task.done ? 'bg-slate-50 border-slate-200' : 'bg-white border-slate-200 shadow-sm'} flex items-center justify-between gap-3 text-xs`;
+
+                item.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <button onclick="toggleTask('${task.id}')" class="w-6 h-6 rounded-lg border flex items-center justify-center ${task.done ? 'bg-agro-600 border-agro-600 text-white' : 'border-slate-300 text-transparent hover:text-slate-300'} transition">
+                            <i class="fa-solid fa-check text-xs"></i>
+                        </button>
+                        <div>
+                            <span class="${task.done ? 'line-through text-slate-400 font-normal' : 'font-bold text-slate-800'} text-sm block">${task.title}</span>
+                            <div class="flex flex-wrap items-center gap-2 mt-1">
+                                <span class="bg-agro-100 text-agro-800 px-2 py-0.5 rounded font-semibold text-[10px]">${task.category}</span>
+                                <span class="text-slate-500 text-[11px]"><i class="fa-solid fa-seedling mr-1"></i>${task.cropName}</span>
+                                <span class="text-slate-400 text-[11px]"><i class="fa-regular fa-calendar mr-1"></i>${task.date}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="deleteTask('${task.id}')" class="text-slate-400 hover:text-red-500 p-2" title="Eliminar labor">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                `;
+
+                container.appendChild(item);
+            });
+        }
+
+        function openAddTaskModal() {
+            document.getElementById('modal-add-task').classList.remove('hidden');
+        }
+
+        function closeAddTaskModal() {
+            document.getElementById('modal-add-task').classList.add('hidden');
+        }
+
+        function saveNewTask(e) {
+            e.preventDefault();
+            const newTask = {
+                id: 'task-' + Date.now(),
+                title: document.getElementById('task-input-title').value,
+                category: document.getElementById('task-input-cat').value,
+                date: document.getElementById('task-input-date').value,
+                cropName: document.getElementById('task-input-crop').value,
+                done: false
+            };
+
+            userTasks.push(newTask);
+            localStorage.setItem('agrotiempos_tasks', JSON.stringify(userTasks));
+            closeAddTaskModal();
+            renderTasks();
+        }
+
+        function toggleTask(id) {
+            const task = userTasks.find(t => t.id === id);
+            if (task) {
+                task.done = !task.done;
+                localStorage.setItem('agrotiempos_tasks', JSON.stringify(userTasks));
+                renderTasks();
+            }
+        }
+
+        function deleteTask(id) {
+            userTasks = userTasks.filter(t => t.id !== id);
+            localStorage.setItem('agrotiempos_tasks', JSON.stringify(userTasks));
+            renderTasks();
+        }
+
+        // Fenology & ET0 Water Calculator Logic
+        // Actualizar Kc dinámicamente al cambiar de cultivo
+        function updateKcValue() {
+            const cropId = document.getElementById('calc-crop-select').value;
+            const baseCrop = CROP_DATABASE.find(c => c.id === cropId);
+            if (baseCrop) {
+                document.getElementById('calc-kc-input').value = baseCrop.kc;
+            }
+        }
+
+        // Cálculo Completo: Hargreaves-Samani + ETc + Lámina Bruta + Volumen Bruto
+        function calculateCropTimeline() {
+            const cropId = document.getElementById('calc-crop-select').value;
+            const plantDateStr = document.getElementById('calc-date-input').value;
+            const areaM2 = parseFloat(document.getElementById('calc-area-input').value) || 1;
+            const kc = parseFloat(document.getElementById('calc-kc-input').value) || 1.0;
+
+            const tMax = parseFloat(document.getElementById('calc-tmax').value) || 0;
+            const tMin = parseFloat(document.getElementById('calc-tmin').value) || 0;
+            const ra = parseFloat(document.getElementById('calc-ra').value) || 0;
+            const eficiencia = parseFloat(document.getElementById('calc-eficiencia').value) || 0.90;
+
+            const baseCrop = CROP_DATABASE.find(c => c.id === cropId) || CROP_DATABASE[0];
+            const startDate = new Date(plantDateStr);
+
+            // 1. CÁLCULO ET0 (Hargreaves-Samani)
+            // ET0 = 0.0023 * Ra * (Tmed + 17.8) * (Tmax - Tmin)^0.5
+            const tMed = (tMax + tMin) / 2;
+            const deltaT = Math.max(0, tMax - tMin);
+            const et0 = 0.0023 * ra * (tMed + 17.8) * Math.sqrt(deltaT);
+
+            // 2. CÁLCULO ETc (Demanda Hídrica)
+            const etc = et0 * kc;
+
+            // 3. CÁLCULO LÁMINA BRUTA Y VOLUMEN BRUTO DIARIO
+            const laminaBruta = etc / eficiencia;
+            const volumenDiarioLitros = laminaBruta * areaM2; // 1 mm en 1 m² = 1 Litro
+
+            // 4. RENDIMIENTO PROYECTADO CICLO COMPLETO
+            const totalDays = baseCrop.totalDays;
+            const harvestDate = new Date(startDate);
+            harvestDate.setDate(harvestDate.getDate() + totalDays);
+            const totalLitrosCiclo = Math.round(volumenDiarioLitros * totalDays);
+
+            // RENDERIZAR RESULTADOS
+            document.getElementById('res-et0').innerText = `${et0.toFixed(2)} mm/día`;
+            document.getElementById('res-etc').innerText = `${etc.toFixed(2)} mm/día`;
+            document.getElementById('res-lamina').innerText = `${laminaBruta.toFixed(2)} mm/día`;
+            document.getElementById('res-volumen').innerText = `${Math.round(volumenDiarioLitros).toLocaleString()} L/día`;
+            document.getElementById('res-volumen-sub').innerText = `En ${areaM2} m² de superficie`;
+
+            document.getElementById('calc-res-title').innerText = `${baseCrop.name} - Balance Hídrico & Fenología`;
+            document.getElementById('calc-res-subtitle').innerText = `Ciclo total: ${totalDays} días | Kc aplicado: ${kc}`;
+            document.getElementById('calc-res-harvest-date').innerText = harvestDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+            document.getElementById('calc-res-water-needed').innerText = `~${totalLitrosCiclo.toLocaleString()} Litros totales proyectados (${areaM2} m²)`;
+
+            // RENDERIZAR LÍNEA DE TIEMPO
+            const timelineSteps = document.getElementById('calc-timeline-steps');
+            timelineSteps.innerHTML = '';
+
+            let accumDays = 0;
+            baseCrop.stages.forEach((stg, idx) => {
+                const stageDays = stg.durationDays;
+                const stageStartDate = new Date(startDate);
+                stageStartDate.setDate(stageStartDate.getDate() + accumDays);
+
+                accumDays += stageDays;
+
+                const stepEl = document.createElement('div');
+                stepEl.className = "relative pl-10 space-y-1";
+                stepEl.innerHTML = `
+                    <div class="absolute left-3 top-1 -translate-x-1/2 w-5 h-5 rounded-full bg-agro-600 border-2 border-white text-white flex items-center justify-center text-[10px] font-bold shadow">
+                        ${idx + 1}
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <div class="flex justify-between items-center text-xs">
+                            <strong class="text-slate-800">${stg.name}</strong>
+                            <span class="text-agro-700 font-bold">${stageDays} Días</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 mt-0.5">${stg.description}</p>
+                        <span class="text-[10px] text-slate-400 block mt-1">Inicio: ${stageStartDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</span>
+                    </div>
+                `;
+                timelineSteps.appendChild(stepEl);
+            });
+
+            document.getElementById('calc-results-container').classList.remove('hidden');
+            // Notificar a MathJax para que procese el nuevo contenido formateado en LaTeX
+if (window.MathJax && window.MathJax.typesetPromise) {
+    window.MathJax.typesetPromise();
+}
+        }
+
+        // AgroAI Intelligent Assistance Simulation
+        function handleAISubmit(e) {
+            e.preventDefault();
+            const input = document.getElementById('ai-input');
+            const query = input.value.trim();
+            if (!query) return;
+
+            appendUserMessage(query);
+            input.value = '';
+
+            setTimeout(() => {
+                generateAIResponse(query);
+            }, 600);
+        }
+
+        function sendPresetQuery(queryText) {
+            appendUserMessage(queryText);
+            setTimeout(() => {
+                generateAIResponse(queryText);
+            }, 600);
+        }
+
+        function appendUserMessage(text) {
+            const container = document.getElementById('ai-chat-messages');
+            const msgHtml = `
+                <div class="flex items-start justify-end gap-3">
+                    <div class="bg-agro-600 text-white p-4 rounded-2xl rounded-tr-none shadow-sm max-w-xl text-sm leading-relaxed">
+                        ${text}
+                    </div>
+                    <div class="w-8 h-8 rounded-full bg-agro-900 text-white flex items-center justify-center text-xs flex-shrink-0">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', msgHtml);
+            container.scrollTop = container.scrollHeight;
+        }
+
+     function generateAIResponse(query) {
+    const container = document.getElementById('ai-chat-messages');
+    const qLower = query.toLowerCase();
+    let responseText = "";
+
+    // 1. Evaluación de términos clave para seleccionar respuesta dinámica
+    if (qLower.includes('ph') || qLower.includes('ácido') || qLower.includes('acidez')) {
+        responseText = `
+            <p><strong>Diagnóstico de pH del Suelo (${soilData.ph}):</strong></p>
+            <p>Un nivel de pH de ${soilData.ph} es moderadamente ácido. Para llevarlo al rango óptimo (6.0 - 6.8), se aconseja aplicar cal agrícola (100 a 120 g/m²) e incorporarla a 10 cm de profundidad.</p>
+        `;
+    } else if (qLower.includes('lluvia') || qLower.includes('riego') || qLower.includes('agua') || qLower.includes('18 mm')) {
+        responseText = `
+            <p><strong>Recomendación de Riego:</strong></p>
+            <p>Con un registro de <strong>${weatherState.rainExpectedMm} mm de lluvia</strong>, el terreno ha alcanzado una humedad del ${soilData.moisture}%. Suspende el riego por goteo en campo abierto por 3 a 4 días para evitar asfixia radicular.</p>
+        `;
+    } else if (qLower.includes('plaga') || qLower.includes('pulgón') || qLower.includes('arañita') || qLower.includes('insecto')) {
+        responseText = `
+            <p><strong>Control Fitosanitario Orgánico:</strong></p>
+            <ul>
+                <li><strong>Jabón Potásico (2%):</strong> Pulverizar sobre el envés de las hojas al atardecer.</li>
+                <li><strong>Aceite de Neem:</strong> Combinar para cortar el ciclo de huevos y ninfas.</li>
+            </ul>
+        `;
+    } else if (qLower.includes('abono') || qLower.includes('compost') || qLower.includes('fertilizante') || qLower.includes('potasio')) {
+        responseText = `
+            <p><strong>Nutrición y Balance de Suelo:</strong></p>
+            <p>Actualmente cuentas con N: ${soilData.n} ppm | P: ${soilData.p} ppm | K: ${soilData.k} ppm. Aplica compost maduro o purín de plátano para reforzar el Potasio durante la fase de floración.</p>
+        `;
+    } else if (qLower.includes('cosecha') || qLower.includes('etapa') || qLower.includes('siembra')) {
+        responseText = `
+            <p><strong>Desarrollo Fenológico:</strong></p>
+            <p>Revisa la sección "Mi Campo" o la "Calculadora" para ver los días acumulados desde la fecha de siembra y estimar la ventana exacta de cosecha según el clima de tu zona.</p>
+        `;
+    } else {
+        // Respuesta adaptativa general cuando no se detectan palabras específicas
+        responseText = `
+            <p><strong>Consulta recibida:</strong> <em>"${query}"</em></p>
+            <p>Estado actual registrado de la parcela:</p>
+            <ul>
+                <li><strong>Suelo:</strong> pH ${soilData.ph} | Materia Orgánica: ${soilData.om}%</li>
+                <li><strong>Humedad:</strong> ${soilData.moisture}% (${weatherState.rainExpectedMm} mm de lluvia)</li>
+            </ul>
+            <p>Para la inquietud consultada, se recomienda inspeccionar las hojas bajas del cultivo y ajustar la frecuencia de riego según el tipo de suelo registrado.</p>
+        `;
+    }
+
+    // 2. Renderizado directo del mensaje en el contenedor del chat
+    const aiHtml = `
+        <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded-full bg-agro-700 text-white flex items-center justify-center text-xs flex-shrink-0">
+                <i class="fa-solid fa-robot"></i>
+            </div>
+            <div class="bg-white border border-slate-200 p-4 rounded-2xl rounded-tl-none shadow-sm max-w-xl text-sm text-slate-800 leading-relaxed space-y-2 ai-response">
+                ${responseText}
+            </div>
+        </div>
+    `;
+
+    container.insertAdjacentHTML('beforeend', aiHtml);
+    container.scrollTop = container.scrollHeight;
+}
+
+        function clearAIChat() {
+            const container = document.getElementById('ai-chat-messages');
+            container.innerHTML = `
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-full bg-agro-700 text-white flex items-center justify-center text-xs flex-shrink-0">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+                    <div class="bg-white border border-slate-200 p-4 rounded-2xl rounded-tl-none shadow-sm max-w-xl text-sm text-slate-800 leading-relaxed space-y-2 ai-response">
+                        <p class="font-bold text-agro-800">Chat reiniciado.</p>
+                        <p>¿En qué consulta de suelos, riego o plagas puedo asistirte?</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Global Stats Counter
+        function updateGlobalStats() {
+            document.getElementById('stat-active-count').innerText = myCrops.length;
+            
+            let waterCount = 0;
+            myCrops.forEach(crop => {
+                const status = calculateCropStatus(crop);
+                if (status.needsWaterToday && !status.rainSuspended) {
+                    waterCount++;
+                }
+            });
+            document.getElementById('stat-water-today').innerText = waterCount;
+        }
+
+        // Export Data Backup JSON
+        function exportData() {
+            const backup = {
+                soilData,
+                myCrops,
+                userTasks,
+                exportedAt: new Date().toISOString()
+            };
+
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `AgroTiempos_Respando_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
